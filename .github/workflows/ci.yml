@@ -1,0 +1,56 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+    branches:
+      - master
+
+env:
+  INSTALL_PREFIX: install
+  BUILD_TYPE: Release
+
+jobs:
+  tests:
+    if: >-
+      ! contains(toJSON(github.event.commits.*.message), '[skip ci]') &&
+      ! contains(toJSON(github.event.commits.*.message), '[skip github]')
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os: [macos, ubuntu]
+
+    runs-on: ${{ matrix.os }}-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.INSTALL_PREFIX }}
+          key: ${{ hashFiles('cmake/install-dependencies.cmake') }}-${{ matrix.os }}
+
+      - name: Set GCC version on Ubuntu
+        if: matrix.os == 'ubuntu'
+        run: |
+          echo "CC=gcc-9" >> $GITHUB_ENV
+          echo "CXX=g++-9" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: cmake -P cmake/install-dependencies.cmake
+
+      - name: Configure
+        run: cmake -S tests -B build -D CMAKE_INSTALL_PREFIX=$INSTALL_PREFIX
+          -D CMAKE_BUILD_TYPE=$BUILD_TYPE
+
+      - name: Build
+        run: cmake --build build --config $BUILD_TYPE
+
+      - name: Run
+        working-directory: build
+        run: ctest --output-on-failure -C $BUILD_TYPE
