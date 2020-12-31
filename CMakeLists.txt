@@ -1,61 +1,70 @@
-cmake_minimum_required(VERSION 3.12)
-project(blobify LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.14)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+project(blobify
+        VERSION 0.0.1
+        DESCRIPTION "C++17 library for all your binary de-/serialization needs"
+        HOMEPAGE_URL "https://github.com/neobrain/blobify"
+        LANGUAGES CXX)
 
+# ---- Warning guard ----
 
-# Check if the user provides dependencies using Conan
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake OPTIONAL RESULT_VARIABLE CONAN_ENABLED)
-if(CONAN_ENABLED)
-    conan_basic_setup(TARGETS)
+# Protect dependents from this project's warnings if the guard isn't disabled
+set(blobify_warning_guard SYSTEM)
+if(blobify_INCLUDE_WITHOUT_SYSTEM)
+  set(blobify_warning_guard "")
 endif()
 
+# ---- Declare library ----
 
-# Build options
-option(BLOBIFY_TESTS "Build tests" OFF)
-
-
-# Find dependencies
-find_package(PFR REQUIRED)
-find_package(magic_enum REQUIRED)
-
-if(BLOBIFY_TESTS)
-    find_package(Catch2)
-    if(NOT Catch2_FOUND)
-        message(FATAL_ERROR "Building tests was requested, but Catch2 could not be found")
-    endif()
-endif()
-
-
-# Setup core library
 add_library(blobify INTERFACE)
-target_link_libraries(blobify INTERFACE pfr::pfr magic_enum::magic_enum)
-target_include_directories(blobify INTERFACE
-    $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+add_library(blobify::blobify ALIAS blobify)
+
+target_include_directories(blobify
+        ${blobify_warning_guard}
+        INTERFACE
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>")
+
 target_compile_features(blobify INTERFACE cxx_std_17)
 
+find_package(BoostPFR 2 REQUIRED)
+find_package(magic_enum 0.7 REQUIRED)
+target_link_libraries(blobify INTERFACE Boost::pfr magic_enum::magic_enum)
 
-# Setup associated sources for static analysis
-# These are a bunch of empty source files that include our headers, so that tools will actually parse them
-add_library(blobify-associated-sources STATIC src/blobify.cpp)
-target_link_libraries(blobify-associated-sources blobify)
+# ---- Install ----
 
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
 
-# Examples and tests
-add_subdirectory(examples)
-if (BLOBIFY_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
-endif()
+set(blobify_directory "blobify-${PROJECT_VERSION}")
+set(blobify_include_directory
+        "${CMAKE_INSTALL_INCLUDEDIR}/${blobify_directory}")
 
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/"
+        DESTINATION "${blobify_include_directory}"
+        COMPONENT blobify_Development)
 
-# Install targets
-install(TARGETS blobify EXPORT blobifyTargets)
-install(DIRECTORY include/ DESTINATION include)
+install(TARGETS blobify
+        EXPORT blobifyTargets
+        INCLUDES DESTINATION "${blobify_include_directory}")
+
+write_basic_package_version_file(
+        blobify-config-version.cmake
+        COMPATIBILITY SameMajorVersion
+        ARCH_INDEPENDENT)
+
+set(blobify_install_cmakedir
+        "${CMAKE_INSTALL_LIBDIR}/cmake/${blobify_directory}")
+
+install(FILES "${PROJECT_BINARY_DIR}/blobify-config-version.cmake"
+        DESTINATION "${blobify_install_cmakedir}"
+        COMPONENT blobify_Development)
+
 install(EXPORT blobifyTargets
-    FILE blobifyTargets.cmake
-    NAMESPACE blobify::
-    DESTINATION lib/cmake/blobify)
+        FILE blobify-config.cmake
+        NAMESPACE blobify::
+        DESTINATION "${blobify_install_cmakedir}"
+        COMPONENT blobify_Development)
 
-# TODO: Add version information via write_basic_package_version_file
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  include(CPack)
+endif()
