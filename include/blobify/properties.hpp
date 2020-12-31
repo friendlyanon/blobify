@@ -6,7 +6,7 @@
 #include "detail/pmd_traits.hpp"
 #include "endian.hpp"
 
-#include <boost/pfr/precise/core.hpp>
+#include <boost/pfr.hpp>
 
 #include <cstddef>
 #include <optional>
