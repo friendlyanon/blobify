@@ -16,11 +16,10 @@ struct memory_storage {
     std::byte* buffer_end;
 
     template<typename T, size_t N>
-    static constexpr memory_storage OnArray(T (&array)[N]) {
-        return memory_storage { reinterpret_cast<std::byte*>(array),
-                                reinterpret_cast<std::byte*>(array),
-                                reinterpret_cast<std::byte*>(std::end(array)) };
-    }
+    explicit constexpr memory_storage(T (&array)[N])
+        : current(reinterpret_cast<std::byte*>(array)),
+          buffer_begin(current),
+          buffer_end(reinterpret_cast<std::byte*>(std::end(array))) {}
 
     void seek(std::ptrdiff_t size) {
         current += size;
