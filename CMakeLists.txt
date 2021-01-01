@@ -55,12 +55,14 @@ write_basic_package_version_file(
 set(blobify_install_cmakedir
         "${CMAKE_INSTALL_LIBDIR}/cmake/${blobify_directory}")
 
-install(FILES "${PROJECT_BINARY_DIR}/blobify-config-version.cmake"
+install(FILES
+        "${PROJECT_SOURCE_DIR}/cmake/blobify-config.cmake"
+        "${PROJECT_BINARY_DIR}/blobify-config-version.cmake"
         DESTINATION "${blobify_install_cmakedir}"
         COMPONENT blobify_Development)
 
 install(EXPORT blobifyTargets
-        FILE blobify-config.cmake
+        FILE blobify-targets.cmake
         NAMESPACE blobify::
         DESTINATION "${blobify_install_cmakedir}"
         COMPONENT blobify_Development)
