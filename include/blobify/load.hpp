@@ -172,16 +172,16 @@ constexpr auto lens_load_from_offset(Storage& storage, std::size_t offset,
         using MemberType = std::remove_reference_t<decltype(std::declval<Data>().*PointerToMember1)>;
 
         // Local helper struct to seek to the member and back upon return.
-        struct StorageSeeker {
+        struct storage_seeker {
             Storage& storage;
             std::size_t offset;
 
-            StorageSeeker(Storage& storage, std::size_t offset)
+            storage_seeker(Storage& storage, std::size_t offset)
                 : storage(storage), offset(offset) {
                 storage.seek(offset);
             }
 
-            ~StorageSeeker() {
+            ~storage_seeker() {
                 // Move back to the beginning of the parent aggregate
                 storage.seek(-static_cast<std::ptrdiff_t>(offset + total_serialized_size<MemberType>()));
             }
