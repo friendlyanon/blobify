@@ -2,9 +2,13 @@ cmake_minimum_required(VERSION 3.14)
 
 project(blobify_tests CXX)
 
+set(blobify_INCLUDE_WITHOUT_SYSTEM YES CACHE INTERNAL "")
 include(FetchContent)
 FetchContent_Declare(blobify SOURCE_DIR "${PROJECT_SOURCE_DIR}/..")
 FetchContent_MakeAvailable(blobify)
+
+include(../cmake/warnings.cmake)
+target_compile_options(blobify INTERFACE ${PROJECT_WARNINGS})
 
 enable_testing()
 
