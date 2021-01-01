@@ -6,6 +6,12 @@ project(blobify
         HOMEPAGE_URL "https://github.com/neobrain/blobify"
         LANGUAGES CXX)
 
+if(MSVC)
+  message(FATAL_ERROR
+          "This library can't compile with MSVC\n"
+          "See: https://github.com/friendlyanon/blobify/issues/1")
+endif()
+
 # ---- Warning guard ----
 
 # Protect dependents from this project's warnings if the guard isn't disabled
