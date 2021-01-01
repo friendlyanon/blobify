@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
     }
 
     try {
-        blob::istream_storage file_blob { file };
+        blob::istream_storage file_blob {{ file }};
 
         auto header = blob::load<BMP::Header>(file_blob);
         auto secondary_header = blob::load<BMP::SecondaryHeaderV4>(file_blob);
@@ -90,7 +90,10 @@ int main(int argc, char* argv[]) {
         std::cout << "Compression: " << magic_enum::enum_name(secondary_header.compression) << std::endl;
         std::cout << "Bits per pixel: " << secondary_header.bits_per_pixel << std::endl;
 
-        file_blob.seek(header.data_offset - blob::detail::total_serialized_size<BMP::Header>() - blob::detail::total_serialized_size<BMP::SecondaryHeaderV4>());
+        auto data_offset = header.data_offset;
+        auto header_size = blob::detail::total_serialized_size<BMP::Header>();
+        auto secondary_header_size = blob::detail::total_serialized_size<BMP::SecondaryHeaderV4>();
+        file_blob.seek(static_cast<std::ptrdiff_t>(data_offset - header_size - secondary_header_size));
         struct RGB24 {
             uint8_t r, g, b;
         };

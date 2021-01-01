@@ -22,7 +22,7 @@ struct pmd_traits_t<Member> {
 
 template<typename T, auto PointerToMember, std::size_t... Idxs>
 constexpr auto pmd_to_member_index(std::index_sequence<Idxs...>) {
-    std::size_t index = -1;
+    std::size_t index = static_cast<std::size_t>(-1);
     auto t = declval(make_tag<T>);
     // Iterate over all members and check which one matches
     ((static_cast<void*>(&boost::pfr::get<Idxs>(t)) == static_cast<void*>(&(t.*PointerToMember)) && (index = Idxs)), ...);

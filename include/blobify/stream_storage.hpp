@@ -4,6 +4,8 @@
 #include "exceptions.hpp"
 #include "storage_backend.hpp"
 
+#include <ios>
+
 namespace blob {
 
 namespace detail {
@@ -16,7 +18,7 @@ struct istream_storage {
     }
 
     void load(std::byte* target, std::size_t num_bytes) {
-        stream.read(reinterpret_cast<char*>(target), num_bytes);
+        stream.read(reinterpret_cast<char*>(target), static_cast<std::streamsize>(num_bytes));
         if (!stream) {
             throw storage_exhausted_exception { };
         }
@@ -31,7 +33,7 @@ struct ostream_storage {
     }
 
     void store(std::byte* source, std::size_t num_bytes) {
-        stream.write(reinterpret_cast<char*>(source), num_bytes);
+        stream.write(reinterpret_cast<char*>(source), static_cast<std::streamsize>(num_bytes));
         if (!stream) {
             throw storage_exhausted_exception { };
         }

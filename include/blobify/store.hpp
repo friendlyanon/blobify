@@ -77,17 +77,18 @@ constexpr void lens_store_to_offset(Storage& storage, std::size_t offset, const 
     } else {
         // Local helper struct to seek to the member and back upon return.
         struct storage_seeker {
-            Storage& storage;
-            std::size_t offset;
+            Storage& m_storage;
+            std::size_t m_offset;
 
             storage_seeker(Storage& storage, std::size_t offset)
-                : storage(storage), offset(offset) {
-                storage.seek(offset);
+                : m_storage(storage), m_offset(offset) {
+                m_storage.seek(m_offset);
             }
 
             ~storage_seeker() {
+                auto rewind = m_offset + total_serialized_size<Value>();
                 // Move back to the beginning of the parent aggregate
-                storage.seek(-static_cast<std::ptrdiff_t>(offset + total_serialized_size<Value>()));
+                m_storage.seek(-static_cast<std::ptrdiff_t>(rewind));
             }
         } seeker(storage, offset);
 
