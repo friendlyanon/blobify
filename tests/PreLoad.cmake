@@ -1,0 +1,9 @@
+set(UBPM_PATH_INIT "${CMAKE_SOURCE_DIR}/../.ubpm")
+
+include("$ENV{UBPM_MODULE_PATH}" OPTIONAL RESULT_VARIABLE ubpm_available)
+
+if(NOT ubpm_available)
+  message(AUTHOR_WARNING "UBPM could not be included")
+else()
+  include(../dependencies.cmake)
+endif()
