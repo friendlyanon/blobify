@@ -37,7 +37,7 @@ jobs:
           echo "CC=gcc-9" >> $GITHUB_ENV
           echo "CXX=g++-9" >> $GITHUB_ENV
 
-      - uses: friendlyanon/ubpm@pre-v1
+      - uses: friendlyanon/ubpm@pre-v2
         id: ubpm
 
       - name: Configure
